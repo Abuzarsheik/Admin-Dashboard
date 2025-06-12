@@ -463,6 +463,12 @@ router.get('/add-more-data', async (req, res) => {
     await User.deleteMany({ email: { $ne: 'admin@example.com' } });
     await Product.deleteMany({});
     
+    // Get admin user for createdBy field
+    const adminUser = await User.findOne({ email: 'admin@example.com' });
+    if (!adminUser) {
+      return res.status(400).json({ message: 'Admin user not found. Run /fix-admin-password first.' });
+    }
+    
     // Create more users
     const users = [
       {
@@ -512,7 +518,7 @@ router.get('/add-more-data', async (req, res) => {
       await user.save();
     }
     
-    // Create more products
+    // Create more products with proper validation
     const products = [
       {
         name: 'iPhone 15 Pro',
@@ -523,7 +529,11 @@ router.get('/add-more-data', async (req, res) => {
         stock: 45,
         sku: 'APL-IP15P-001',
         isActive: true,
-        images: ['https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400']
+        images: ['https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400&fmt=jpg'],
+        tags: ['smartphone', 'apple', 'iphone'],
+        ratings: { average: 4.8, count: 120 },
+        sales: { totalSold: 85, revenue: 84915 },
+        createdBy: adminUser._id
       },
       {
         name: 'MacBook Air M2',
@@ -534,7 +544,11 @@ router.get('/add-more-data', async (req, res) => {
         stock: 23,
         sku: 'APL-MBA-M2-001',
         isActive: true,
-        images: ['https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400']
+        images: ['https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&fmt=jpg'],
+        tags: ['laptop', 'apple', 'macbook'],
+        ratings: { average: 4.9, count: 87 },
+        sales: { totalSold: 43, revenue: 55857 },
+        createdBy: adminUser._id
       },
       {
         name: 'Samsung Galaxy S24',
@@ -545,7 +559,11 @@ router.get('/add-more-data', async (req, res) => {
         stock: 67,
         sku: 'SAM-GS24-001',
         isActive: true,
-        images: ['https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400']
+        images: ['https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&fmt=jpg'],
+        tags: ['smartphone', 'samsung', 'android'],
+        ratings: { average: 4.6, count: 95 },
+        sales: { totalSold: 62, revenue: 49538 },
+        createdBy: adminUser._id
       },
       {
         name: 'Dell XPS 13',
@@ -556,7 +574,11 @@ router.get('/add-more-data', async (req, res) => {
         stock: 34,
         sku: 'DEL-XPS13-001',
         isActive: true,
-        images: ['https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400']
+        images: ['https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&fmt=jpg'],
+        tags: ['laptop', 'dell', 'windows'],
+        ratings: { average: 4.4, count: 67 },
+        sales: { totalSold: 28, revenue: 30772 },
+        createdBy: adminUser._id
       },
       {
         name: 'Sony WH-1000XM5',
@@ -567,7 +589,11 @@ router.get('/add-more-data', async (req, res) => {
         stock: 89,
         sku: 'SNY-WH1000XM5-001',
         isActive: true,
-        images: ['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400']
+        images: ['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&fmt=jpg'],
+        tags: ['headphones', 'sony', 'wireless', 'noise-canceling'],
+        ratings: { average: 4.7, count: 88 },
+        sales: { totalSold: 67, revenue: 26733 },
+        createdBy: adminUser._id
       },
       {
         name: 'iPad Pro 12.9"',
@@ -578,29 +604,41 @@ router.get('/add-more-data', async (req, res) => {
         stock: 56,
         sku: 'APL-IPADPRO-001',
         isActive: true,
-        images: ['https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400']
+        images: ['https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400&fmt=jpg'],
+        tags: ['tablet', 'apple', 'ipad'],
+        ratings: { average: 4.6, count: 76 },
+        sales: { totalSold: 54, revenue: 59346 },
+        createdBy: adminUser._id
       },
       {
         name: 'Nike Air Max 270',
         description: 'Comfortable running shoes',
         price: 150,
-        category: 'Fashion',
+        category: 'Clothing',
         brand: 'Nike',
         stock: 120,
         sku: 'NKE-AM270-001',
         isActive: true,
-        images: ['https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400']
+        images: ['https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&fmt=jpg'],
+        tags: ['shoes', 'nike', 'running'],
+        ratings: { average: 4.4, count: 210 },
+        sales: { totalSold: 156, revenue: 23400 },
+        createdBy: adminUser._id
       },
       {
         name: 'Adidas Ultraboost 22',
         description: 'High-performance running shoes',
         price: 180,
-        category: 'Fashion',
+        category: 'Clothing',
         brand: 'Adidas',
         stock: 95,
         sku: 'ADS-UB22-001',
         isActive: true,
-        images: ['https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400']
+        images: ['https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=400&fmt=jpg'],
+        tags: ['shoes', 'adidas', 'running', 'boost'],
+        ratings: { average: 4.5, count: 180 },
+        sales: { totalSold: 134, revenue: 24120 },
+        createdBy: adminUser._id
       },
       {
         name: 'PlayStation 5',
@@ -611,7 +649,11 @@ router.get('/add-more-data', async (req, res) => {
         stock: 15,
         sku: 'SNY-PS5-001',
         isActive: true,
-        images: ['https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=400']
+        images: ['https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=400&fmt=jpg'],
+        tags: ['gaming', 'sony', 'console'],
+        ratings: { average: 4.8, count: 245 },
+        sales: { totalSold: 78, revenue: 38922 },
+        createdBy: adminUser._id
       },
       {
         name: 'Nintendo Switch OLED',
@@ -622,11 +664,18 @@ router.get('/add-more-data', async (req, res) => {
         stock: 42,
         sku: 'NIN-SWOLED-001',
         isActive: true,
-        images: ['https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400']
+        images: ['https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&fmt=jpg'],
+        tags: ['gaming', 'nintendo', 'portable'],
+        ratings: { average: 4.6, count: 167 },
+        sales: { totalSold: 89, revenue: 31061 },
+        createdBy: adminUser._id
       }
     ];
 
-    await Product.insertMany(products);
+    for (const productData of products) {
+      const product = new Product(productData);
+      await product.save();
+    }
 
     const totalUsers = await User.countDocuments();
     const totalProducts = await Product.countDocuments();
