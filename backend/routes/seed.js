@@ -357,4 +357,65 @@ router.post('/initialize-production', async (req, res) => {
   }
 });
 
+// Debug route to check users
+router.get('/check-users', async (req, res) => {
+  try {
+    const users = await User.find({}, 'name email role isActive').lean();
+    const userCount = await User.countDocuments();
+    
+    res.json({
+      message: 'Users in database',
+      count: userCount,
+      users: users
+    });
+  } catch (error) {
+    console.error('Check users error:', error);
+    res.status(500).json({ 
+      message: 'Error checking users', 
+      error: error.message 
+    });
+  }
+});
+
+// Debug route to test admin login
+router.get('/test-admin-login', async (req, res) => {
+  try {
+    const email = 'admin@example.com';
+    const password = 'admin123';
+    
+    // Find user
+    const user = await User.findByEmail(email);
+    if (!user) {
+      return res.json({ 
+        success: false, 
+        message: 'User not found',
+        searchedEmail: email 
+      });
+    }
+    
+    // Test password
+    const isMatch = await user.comparePassword(password);
+    
+    res.json({
+      success: true,
+      message: 'Admin user test',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive
+      },
+      passwordMatch: isMatch,
+      testPassword: password
+    });
+  } catch (error) {
+    console.error('Test admin login error:', error);
+    res.status(500).json({ 
+      message: 'Error testing admin login', 
+      error: error.message 
+    });
+  }
+});
+
 module.exports = router; 
