@@ -418,4 +418,42 @@ router.get('/test-admin-login', async (req, res) => {
   }
 });
 
+// Fix admin password route
+router.get('/fix-admin-password', async (req, res) => {
+  try {
+    // Delete the incorrectly hashed admin user
+    await User.deleteOne({ email: 'admin@example.com' });
+    
+    // Create new admin user with correct password (let User model handle hashing)
+    const adminUser = new User({
+      name: 'Admin User',
+      email: 'admin@example.com',
+      password: 'admin123', // Plain text - User model will hash it
+      role: 'admin',
+      isActive: true,
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150'
+    });
+    await adminUser.save();
+    
+    // Test the new password
+    const testUser = await User.findByEmail('admin@example.com');
+    const passwordWorks = await testUser.comparePassword('admin123');
+    
+    res.json({
+      message: 'Admin password fixed successfully!',
+      passwordTest: passwordWorks,
+      credentials: {
+        email: 'admin@example.com',
+        password: 'admin123'
+      }
+    });
+  } catch (error) {
+    console.error('Fix admin password error:', error);
+    res.status(500).json({ 
+      message: 'Error fixing admin password', 
+      error: error.message 
+    });
+  }
+});
+
 module.exports = router; 
