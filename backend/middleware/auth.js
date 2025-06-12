@@ -2,10 +2,18 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const config = require('../config/environment');
 
-// Verify JWT token from cookies
+// Verify JWT token from cookies or Authorization header
 const auth = async (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    // Check for token in cookies first, then Authorization header
+    let token = req.cookies.token;
+    
+    if (!token) {
+      const authHeader = req.header('Authorization');
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+      }
+    }
 
     if (!token) {
       return res.status(401).json({ 

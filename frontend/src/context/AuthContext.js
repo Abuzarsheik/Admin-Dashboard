@@ -110,6 +110,11 @@ export const AuthProvider = ({ children }) => {
       const response = await authAPI.login(credentials);
       const data = apiHelpers.formatResponse(response);
 
+      // Store token in localStorage if provided
+      if (data.token) {
+        localStorage.setItem('authToken', data.token);
+      }
+
       dispatch({ 
         type: AUTH_ACTIONS.LOGIN_SUCCESS, 
         payload: data.user 
@@ -131,10 +136,13 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await authAPI.logout();
+      // Clear token from localStorage
+      localStorage.removeItem('authToken');
       dispatch({ type: AUTH_ACTIONS.LOGOUT });
       apiHelpers.showSuccess('Logged out successfully');
     } catch (error) {
       // Even if logout fails on server, clear local state
+      localStorage.removeItem('authToken');
       dispatch({ type: AUTH_ACTIONS.LOGOUT });
       apiHelpers.handleError(error, 'Logout failed');
     }

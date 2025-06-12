@@ -14,6 +14,11 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
+    // Add Authorization header if token exists
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
@@ -28,6 +33,15 @@ api.interceptors.response.use(
   },
   (error) => {
     const message = error.response?.data?.message || 'An error occurred';
+    
+    // Handle 401 errors by clearing token
+    if (error.response?.status === 401) {
+      localStorage.removeItem('authToken');
+      // Only redirect to login if not already on login page
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
+    }
     
     // Don't show toast for certain endpoints (like auth check)
     const silentEndpoints = ['/auth/me'];

@@ -59,16 +59,18 @@ router.post('/login', async (req, res) => {
     // Generate token
     const token = generateToken(user._id);
 
-    // Set HTTP-only cookie
+    // Set HTTP-only cookie with cross-origin support
     res.cookie('token', token, {
       httpOnly: true,
       secure: config.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      sameSite: config.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      domain: config.NODE_ENV === 'production' ? undefined : undefined
     });
 
     res.json({
       message: 'Login successful',
+      token: token,
       user: {
         id: user._id,
         name: user.name,
@@ -95,7 +97,7 @@ router.post('/logout', auth, async (req, res) => {
     res.clearCookie('token', {
       httpOnly: true,
       secure: config.NODE_ENV === 'production',
-      sameSite: 'strict'
+      sameSite: config.NODE_ENV === 'production' ? 'none' : 'lax'
     });
 
     res.json({
